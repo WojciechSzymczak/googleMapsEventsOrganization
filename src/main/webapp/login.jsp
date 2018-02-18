@@ -3,13 +3,11 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>login</title>
+        <title>Events - login page</title>
     </head>
     
-    <body>    
-        login.jsp:
-
-        <!--
+    <body>
+        
         <h2>Hello, please log in:</h2>
         <br><br>
         <form action="j_security_check" method=post>
@@ -21,7 +19,7 @@
             <input type="submit" value="Submit">
             <input type="reset" value="Reset">
         </form>
-        -->
+        
         
     </body>
 </html>

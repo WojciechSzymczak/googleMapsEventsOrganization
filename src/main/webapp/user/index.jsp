@@ -3,12 +3,11 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Events - login error page</title>
+        <title>Events - user main page</title>
     </head>
-    
     <body>
         
-        Wystąpił błąd logowania...
+        <h1>Hello World from user folder!</h1>
         
     </body>
 </html>

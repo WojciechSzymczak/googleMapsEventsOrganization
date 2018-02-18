@@ -38,7 +38,7 @@ public class HelloWorld extends HttpServlet {
                     ResultSet rs = preparedStatement.executeQuery();
                     
                     while (rs.next()) {
-                        tekst.append("<tr><td style=\"border: 2px solid black;\">").append(rs.getString("email")).append("</td></tr>");
+                        tekst.append("<tr><td style=\"border: 2px solid black;\">").append(rs.getString("user_email")).append("</td></tr>");
                     }
 
                     tekst.append("</table></body></html>");
