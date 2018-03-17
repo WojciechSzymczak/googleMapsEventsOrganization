@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    <display-name>Events</display-name>
+    <description>A small, web service allowing users to organize events with Google Maps.</description>
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+    <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <url-pattern>*.jspf</url-pattern>
+            <!--<include-prelude>/WEB-INF/jspf/userPanel.jspf</include-prelude>-->
+        </jsp-property-group>
+    </jsp-config>
+    <context-param>
+        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-value>Development</param-value>
+    </context-param>
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet>
+        <servlet-name>UserPanelLoginController</servlet-name>
+        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.UserPanelLoginController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserPanelLoginController</servlet-name>
+        <url-pattern>/UserPanelLoginController</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>UserProfileController</servlet-name>
+        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.UserProfileController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserProfileController</servlet-name>
+        <url-pattern>/UserProfileController</url-pattern>
+        <url-pattern>/user/UserProfileController</url-pattern>
+        <url-pattern>/admin/UserProfileController</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>UserRegisterController</servlet-name>
+        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.UserRegisterController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserRegisterController</servlet-name>
+        <url-pattern>/UserRegisterController</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>EventAddController</servlet-name>
+        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.EventAddController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EventAddController</servlet-name>
+        <url-pattern>/EventAddController</url-pattern>
+        <url-pattern>/user/EventAddController</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>EventManagerController</servlet-name>
+        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.EventManagerController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EventManagerController</servlet-name>
+        <url-pattern>/EventManagerController</url-pattern>
+        <url-pattern>/user/EventManagerController</url-pattern>
+        <url-pattern>/admin/EventManagerController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>/faces/*</url-pattern>
+    </servlet-mapping>
+    <security-role>
+        <role-name>admin</role-name>
+    </security-role>
+    <security-role>
+        <role-name>user</role-name>
+    </security-role>
+    <security-constraint>
+        <display-name>Security constraint for the /admin folder</display-name>
+        <web-resource-collection>
+            <web-resource-name>Administrator protected area</web-resource-name>
+            <url-pattern>/admin/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <display-name>Security constraint for the /user folder</display-name>
+        <web-resource-collection>
+            <web-resource-name>User protected area</web-resource-name>
+            <url-pattern>/user/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
+            <role-name>user</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <form-login-config>
+            <form-login-page>/login.jsp</form-login-page>
+            <form-error-page>/error.jsp</form-error-page>
+        </form-login-config>
+    </login-config>
+</web-app>
