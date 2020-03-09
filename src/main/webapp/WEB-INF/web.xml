@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
-    <display-name>Events</display-name>
-    <description>A small, web service allowing users to organize events with Google Maps.</description>
+    <display-name>Authentication App</display-name>
+    <description>A small web service allowing users to authenticate.</description>
     <session-config>
         <session-timeout>
             30
@@ -14,7 +14,6 @@
         <jsp-property-group>
             <url-pattern>*.jsp</url-pattern>
             <url-pattern>*.jspf</url-pattern>
-            <!--<include-prelude>/WEB-INF/jspf/userPanel.jspf</include-prelude>-->
         </jsp-property-group>
     </jsp-config>
     <context-param>
@@ -27,49 +26,12 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
-        <servlet-name>UserPanelLoginController</servlet-name>
-        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.UserPanelLoginController</servlet-class>
+        <servlet-name>AuthController</servlet-name>
+        <servlet-class>app.authentication.controller.AuthenticationController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>UserPanelLoginController</servlet-name>
-        <url-pattern>/UserPanelLoginController</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>UserProfileController</servlet-name>
-        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.UserProfileController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>UserProfileController</servlet-name>
-        <url-pattern>/UserProfileController</url-pattern>
-        <url-pattern>/user/UserProfileController</url-pattern>
-        <url-pattern>/admin/UserProfileController</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>UserRegisterController</servlet-name>
-        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.UserRegisterController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>UserRegisterController</servlet-name>
-        <url-pattern>/UserRegisterController</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>EventAddController</servlet-name>
-        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.EventAddController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>EventAddController</servlet-name>
-        <url-pattern>/EventAddController</url-pattern>
-        <url-pattern>/user/EventAddController</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>EventManagerController</servlet-name>
-        <servlet-class>szymczak.wojciech.googlemapseventsorganization.controller.EventManagerController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>EventManagerController</servlet-name>
-        <url-pattern>/EventManagerController</url-pattern>
-        <url-pattern>/user/EventManagerController</url-pattern>
-        <url-pattern>/admin/EventManagerController</url-pattern>
+        <servlet-name>AuthController</servlet-name>
+        <url-pattern>/AuthController</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>

@@ -2,23 +2,20 @@
 <%@ taglib uri='http://java.sun.com/jsp/jstl/core' prefix='c'%>
 <!DOCTYPE html>
 <html>
-    <head>        
-        <link rel="icon" type="image/png" href="/images/favicon.png">
+    <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Events - user main page</title>        
+        <title>Authentication app - user main page</title>
     </head>
     <body>
-        
         <h1>Hello World from user folder!</h1>
         
         <c:if test="${pageContext.request.isUserInRole('user')}">
                 Logged as user ${pageContext.request.getRemoteUser()}!<br>
-                <a href="../logout.jsp">Logout</a>
+                <a href="${pageContext.request.contextPath}/logout.jsp">Logout</a>
             </c:if>
             <c:if test="${pageContext.request.isUserInRole('admin')}">
                 Logged as administrator ${pageContext.request.getRemoteUser()}!<br>
-                <a href="../logout.jsp">Logout</a>
+                <a href="${pageContext.request.contextPath}/logout.jsp">Logout</a>
             </c:if>
-                
     </body>
 </html>

@@ -2,13 +2,10 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="icon" type="image/png" href="/images/favicon.png">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Events - login page</title>
+        <title>Authentication app - Log in</title>
     </head>
-    
     <body>
-        
         <h2>Hello, please log in:</h2>
         <br><br>
         <form action="j_security_check" method=post>
@@ -20,7 +17,5 @@
             <input type="submit" value="Submit">
             <input type="reset" value="Reset">
         </form>
-        
-        
     </body>
 </html>

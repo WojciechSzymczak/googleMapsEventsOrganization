@@ -2,14 +2,10 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="icon" type="image/png" href="/images/favicon.png">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Events - login error page</title>
+        <title>Authentication app - error</title>
     </head>
-    
     <body>
-        
-        A login error occurred... <a href="/index.jsp#login">Try again!</a>
-        
+        An error occurred... <a href="${pageContext.request.contextPath}/index.jsp">Try again!</a>
     </body>
 </html>
