@@ -1,0 +1,3 @@
+db.user=c##auth_user
+db.password=12345678
+db.url=jdbc:oracle:thin:@localhost:1521:XE

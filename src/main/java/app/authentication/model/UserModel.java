@@ -1,23 +1,30 @@
 package app.authentication.model;
 
-import java.math.BigInteger;
-
-//TODO
 public class UserModel {
     
-    BigInteger userID;
-    String userEmail;
-    String userName;
-    String userPass;
-    String userFirstName;
-    String userLastName;
+    int userId;
 
-    public BigInteger getUserID() {
-        return userID;
+    String userEmail;
+
+    String userName;
+
+    String userPass;
+
+    public UserModel() {}
+
+    public UserModel(int userId, String userEmail, String userName, String userPass) {
+        this.userId = userId;
+        this.userEmail = userEmail;
+        this.userName = userName;
+        this.userPass = userPass;
     }
 
-    public void setUserID(BigInteger userID) {
-        this.userID = userID;
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getUserEmail() {
@@ -43,35 +50,9 @@ public class UserModel {
     public void setUserPass(String userPass) {
         this.userPass = userPass;
     }
-
-    public String getUserFirstName() {
-        return userFirstName;
-    }
-
-    public void setUserFirstName(String userFirstName) {
-        this.userFirstName = userFirstName;
-    }
-
-    public String getUserLastName() {
-        return userLastName;
-    }
-
-    public void setUserLastName(String userLastName) {
-        this.userLastName = userLastName;
-    }
-
-    public UserModel() {}
-
-    public UserModel(String userEmail, String userName, String userPass, String userFirstName, String userLastName) {
-        this.userEmail = userEmail;
-        this.userName = userName;
-        this.userPass = userPass;
-        this.userFirstName = userFirstName;
-        this.userLastName = userLastName;
-    }
     
     @Override
     public String toString() {
-        return this.userEmail + " " + this.userName + " " + this.userPass + " " + this.userFirstName + " " + this.userLastName;
+        return this.userEmail + " " + this.userName + " " + this.userPass;
     }
 }
