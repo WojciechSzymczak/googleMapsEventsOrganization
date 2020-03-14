@@ -4,6 +4,7 @@ CREATE TABLE c##auth_user.users(
 	user_name VARCHAR(255) NOT NULL UNIQUE,
 	user_pass CHAR(64) NOT NULL
 );
+/
 
 CREATE TABLE c##auth_user.user_roles (
   user_role_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -13,6 +14,7 @@ CREATE TABLE c##auth_user.user_roles (
   FOREIGN KEY (user_id)
   REFERENCES c##auth_user.users(user_id)
 );
+/
 
 CREATE OR REPLACE TRIGGER c##auth_user.set_user_role_when_registering
 AFTER INSERT ON c##auth_user.users
@@ -20,6 +22,7 @@ FOR EACH ROW
 BEGIN
     INSERT INTO c##auth_user.user_roles(user_id, role_name) VALUES (:NEW.user_id, 'user');
 END;
+/
 
 --TODO fix procedure - authenticate_user
 CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
@@ -31,6 +34,7 @@ CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
        , user_id OUT NUMBER
        , user_email OUT VARCHAR );
 END USER_PACKAGE;
+/
 
 CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
     PROCEDURE authenticate_user(
