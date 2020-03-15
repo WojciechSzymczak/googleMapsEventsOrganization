@@ -24,7 +24,6 @@ BEGIN
 END;
 /
 
---TODO fix procedure - authenticate_user
 CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
     PROCEDURE authenticate_user(
          user_name IN VARCHAR
@@ -44,16 +43,33 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
        , res_msg OUT VARCHAR
        , user_id OUT NUMBER
        , user_email OUT VARCHAR ) IS
+    wrong_credentials EXCEPTION;
     user_rec c##auth_user.users%ROWTYPE;
-    BEGIN
-        SELECT * INTO user_rec
-        FROM c##auth_user.users U
-        WHERE U.user_name LIKE authenticate_user.user_name
-          AND U.user_pass LIKE authenticate_user.user_pass
-          AND ROWNUM <= 1;
-        authenticate_user.res_code := 1;
-        authenticate_user.res_msg := 'SUCCESS';
-        authenticate_user.user_id := user_rec.user_id;
-        authenticate_user.user_email := user_rec.user_email;
-    END;
+    CURSOR user_cur RETURN c##auth_user.users%ROWTYPE IS
+    SELECT * FROM c##auth_user.users u 
+    WHERE TRIM(u.user_name) = authenticate_user.user_name
+    AND TRIM(u.user_pass) = authenticate_user.user_pass;
+    BEGIN    
+        OPEN user_cur;    
+        LOOP
+            FETCH user_cur INTO user_rec;
+            EXIT WHEN user_cur%NOTFOUND;
+        END LOOP;
+        
+        IF user_cur%ROWCOUNT = 0 THEN
+            CLOSE user_cur;
+            RAISE wrong_credentials;
+        ELSE            
+            CLOSE user_cur;
+            authenticate_user.res_code := 1;
+            authenticate_user.res_msg := 'User successfully authenticated.';
+            authenticate_user.user_id := user_rec.user_id;
+            authenticate_user.user_email := user_rec.user_email;
+        END IF;
+        
+        EXCEPTION
+            WHEN wrong_credentials THEN
+                authenticate_user.res_code := 0;
+                authenticate_user.res_msg := 'Wrong credentials.';
+    END authenticate_user;
 END USER_PACKAGE;
