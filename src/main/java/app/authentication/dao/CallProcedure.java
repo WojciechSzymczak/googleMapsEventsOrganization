@@ -25,16 +25,17 @@ class CallProcedure {
                 initConnection();
             }
 
-            statement = conn.prepareCall("{call c##auth_user.USER_PACKAGE.authenticate_user(?, ?, ? ,?, ?, ?)}");
+            statement = conn.prepareCall("{call c##auth_user.USER_PACKAGE.authenticate_user(?, ?, ? ,?, ?, ?, ?)}");
             statement.setString(1, userName);
             statement.setString(2, userPassword);
             statement.registerOutParameter(3, Types.INTEGER);
             statement.registerOutParameter(4, Types.VARCHAR);
             statement.registerOutParameter(5, Types.INTEGER);
             statement.registerOutParameter(6, Types.VARCHAR);
+            statement.registerOutParameter(7, Types.VARCHAR);
             statement.execute();
 
-            userModel = new UserModel(statement.getInt(5), statement.getString(6), userName, userPassword, "user");
+            userModel = new UserModel(statement.getInt(5), statement.getString(6), userName, userPassword, statement.getString(7));
             resCode = new ResultCode(statement.getInt(3), statement.getString(4));
         } catch (SQLException e) {
             e.printStackTrace();

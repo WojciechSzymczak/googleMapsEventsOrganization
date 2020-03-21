@@ -31,7 +31,8 @@ CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
        , res_code OUT NUMBER
        , res_msg OUT VARCHAR
        , user_id OUT NUMBER
-       , user_email OUT VARCHAR );
+       , user_email OUT VARCHAR 
+       , user_role OUT VARCHAR);
 END USER_PACKAGE;
 /
 
@@ -42,7 +43,8 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
        , res_code OUT NUMBER
        , res_msg OUT VARCHAR
        , user_id OUT NUMBER
-       , user_email OUT VARCHAR ) IS
+       , user_email OUT VARCHAR 
+       , user_role OUT VARCHAR) IS
     wrong_credentials EXCEPTION;
     user_rec c##auth_user.users%ROWTYPE;
     CURSOR user_cur RETURN c##auth_user.users%ROWTYPE IS
@@ -65,6 +67,10 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
             authenticate_user.res_msg := 'User successfully authenticated.';
             authenticate_user.user_id := user_rec.user_id;
             authenticate_user.user_email := user_rec.user_email;
+            SELECT role_name 
+            INTO authenticate_user.user_role 
+            FROM c##auth_user.user_roles ur
+            WHERE ur.user_id = user_rec.user_id;
         END IF;
         
         EXCEPTION
