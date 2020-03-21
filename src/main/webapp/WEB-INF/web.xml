@@ -26,12 +26,12 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>
-        <servlet-name>AuthController</servlet-name>
-        <servlet-class>app.authentication.controller.AuthenticationController</servlet-class>
+        <servlet-name>AuthenticationServlet</servlet-name>
+        <servlet-class>app.authentication.controller.AuthenticationServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>AuthController</servlet-name>
-        <url-pattern>/AuthController</url-pattern>
+        <servlet-name>AuthenticationServlet</servlet-name>
+        <url-pattern>/authentication</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>Faces Servlet</servlet-name>
