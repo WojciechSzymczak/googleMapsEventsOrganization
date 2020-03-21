@@ -34,7 +34,7 @@ class CallProcedure {
             statement.registerOutParameter(6, Types.VARCHAR);
             statement.execute();
 
-            userModel = new UserModel(statement.getInt(5), statement.getString(6), userName, userPassword);
+            userModel = new UserModel(statement.getInt(5), statement.getString(6), userName, userPassword, "user");
             resCode = new ResultCode(statement.getInt(3), statement.getString(4));
         } catch (SQLException e) {
             e.printStackTrace();

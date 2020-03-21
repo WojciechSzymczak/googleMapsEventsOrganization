@@ -1,4 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib uri='http://java.sun.com/jsp/jstl/core' prefix='c'%>
 <!DOCTYPE html>
 <html>
     <head>
@@ -6,10 +7,7 @@
         <title>Authentication app - logout page</title>
     </head>
     <body>
-        <%
-            request.getSession(false).invalidate(); 
-            String redirectURL = "index.jsp";
-            response.sendRedirect(redirectURL);
-        %>
+        <% request.getSession(false).invalidate(); %>
+        <c:redirect url="/index.jsp"/>
     </body>
 </html>

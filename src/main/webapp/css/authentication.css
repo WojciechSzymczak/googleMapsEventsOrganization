@@ -18,3 +18,9 @@ html {
 .card-deck .card {
     min-width: 220px;
 }
+
+.error {
+    position: absolute;
+    top: 30%;
+    left: 0%;
+}

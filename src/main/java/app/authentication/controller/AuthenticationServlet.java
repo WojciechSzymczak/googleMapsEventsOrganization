@@ -12,32 +12,23 @@ import javax.servlet.http.HttpSession;
 
 public class AuthenticationServlet extends HttpServlet {
 
-//TODO
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         UserDao userDao = new UserDao();
 
         try {
-//            UserModel userModel = userDao.getUserModel("nowak", "12345678");
-//            HttpSession session = request.getSession();
-//            session.setAttribute("name", userModel.getUserEmail());
+            UserModel userModel = userDao.getUserModel(request.getParameter("login"), request.getParameter("password"));
+            HttpSession session = request.getSession(true);
+            session.setAttribute("user", userModel);
+            if (userModel.getUserRole().equals("user")) {
+                response.sendRedirect(request.getContextPath() + "/user/index.jsp");
+            } else if (userModel.getUserRole().equals("admin")) {
+                response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
+            }
         } catch (Exception e) {
             request.getSession().setAttribute("msg", "An authentication error occurred. Please try again.");
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
-
-        response.sendRedirect(request.getContextPath() + "/index.jsp");
-    }    
-
-    //TODO
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        try {
-                request.login(request.getParameter("username"), request.getParameter("password"));
-                response.sendRedirect("/index.jsp");
-            } catch(ServletException e) {
-                response.sendRedirect("/error.jsp");
-            }
     }
 }

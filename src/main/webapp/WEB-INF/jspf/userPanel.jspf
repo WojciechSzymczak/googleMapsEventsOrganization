@@ -1,43 +1,4 @@
-<div class="container-fluid">
-    <div class="row" id="user_panel">
-        
-        <c:if test="${pageContext.request.isUserInRole('user') or pageContext.request.isUserInRole('admin')}">  
-            <div class="user_panel_outer col-lg-12">
-                <a href="/logout.jsp">Log out, ${pageContext.request.getRemoteUser()}</a>
-            </div>
-        </c:if>
-        
-        
-        <c:if test="${(pageContext.request.isUserInRole('user') or pageContext.request.isUserInRole('admin'))==false}">  
-            <div class="user_panel_outer col-lg-12">
-                <a href="#" data-toggle="modal" data-target="#login-modal">Log in</a>
-                <a href="/register.jsp">Register</a>            
-            </div>
-        </c:if>
-        
-        <div class="modal fade" id="login-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-            <div class="modal-dialog">
-		<div class="loginmodal-container">
-                    
-                    <h1>Log in to your account.</h1><br>
-                    
-                        <form action="UserPanelLoginController" method="POST">
-                            Username:
-                            <input type="text" name="username" /><br />
-                            Password:
-                            <input type="password" name="password" /><br />
-                            <input type="submit" value="Login" class="login loginmodal-submit"/><br />
-                        </form>
-					
-			<div class="login-help">
-                            <a href="#">Don't have an account? Register now!</a><br><br><a href="#">I forgot my password.</a>
-                        </div>
-                    
-                </div>
-            </div>
-        </div>
-        
-        
-    </div>
+<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
+    <h5 class="my-0 mr-md-auto font-weight-normal">Authentication app</h5>
+    <c:if test="${sessionScope.user != null}"><a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/logout.jsp">Log out</a></c:if>
 </div>
-
