@@ -46,6 +46,9 @@ CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
     PROCEDURE get_user_actions(
          user_id IN INTEGER
        , actions_cursor OUT SYS_REFCURSOR);
+    PROCEDURE add_user_action(
+         user_id IN INTEGER
+       , action_name IN VARCHAR);
 END USER_PACKAGE;
 /
 
@@ -84,6 +87,7 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
             INTO authenticate_user.user_role 
             FROM c##auth_user.user_roles ur
             WHERE ur.user_id = user_rec.user_id;
+            c##auth_user.USER_PACKAGE.add_user_action('Authentication', user_rec.user_id);
         END IF;
         
         EXCEPTION
@@ -101,4 +105,10 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
         WHERE ua.user_id = get_user_actions.user_id
         ORDER BY ua.action_date;
     END get_user_actions;
+    PROCEDURE add_user_action(
+         user_id IN INTEGER
+       , action_name IN VARCHAR) IS
+     BEGIN
+        INSERT INTO c##auth_user.users_actions(action_date, action_name, user_id) VALUES (SYSDATE, add_user_action.action_name, add_user_action.user_id);
+     END add_user_action;
 END USER_PACKAGE;
