@@ -22,7 +22,7 @@ public class AuthenticationServlet extends HttpServlet {
             HttpSession session = request.getSession(true);
             session.setAttribute("user", userModel);
             if (userModel.getUserRole().equals("user")) {
-                response.sendRedirect(request.getContextPath() + "/user/index.jsp");
+                response.sendRedirect(request.getContextPath() + "/actions");
             } else if (userModel.getUserRole().equals("admin")) {
                 response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
             }

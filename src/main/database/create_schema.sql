@@ -16,6 +16,16 @@ CREATE TABLE c##auth_user.user_roles (
 );
 /
 
+CREATE TABLE c##auth_user.users_actions(
+	action_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	action_date DATE NOT NULL,
+	action_name VARCHAR(255) NOT NULL,
+	user_id INTEGER NOT NULL,
+    CONSTRAINT fk_action_user_id
+    FOREIGN KEY (user_id)
+    REFERENCES c##auth_user.users(user_id)
+);
+
 CREATE OR REPLACE TRIGGER c##auth_user.set_user_role_when_registering
 AFTER INSERT ON c##auth_user.users
 FOR EACH ROW
@@ -33,6 +43,9 @@ CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
        , user_id OUT NUMBER
        , user_email OUT VARCHAR 
        , user_role OUT VARCHAR);
+    PROCEDURE get_user_actions(
+         user_id IN INTEGER
+       , actions_cursor OUT SYS_REFCURSOR);
 END USER_PACKAGE;
 /
 
@@ -78,4 +91,14 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
                 authenticate_user.res_code := 0;
                 authenticate_user.res_msg := 'Wrong credentials.';
     END authenticate_user;
+    PROCEDURE get_user_actions(
+         user_id IN INTEGER
+       , actions_cursor OUT SYS_REFCURSOR) IS
+    BEGIN    
+        OPEN actions_cursor FOR
+        SELECT ACTION_ID, ACTION_DATE, ACTION_NAME, USER_ID
+        FROM c##auth_user.users_actions ua
+        WHERE ua.user_id = get_user_actions.user_id
+        ORDER BY ua.action_date;
+    END get_user_actions;
 END USER_PACKAGE;

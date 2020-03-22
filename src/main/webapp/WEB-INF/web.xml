@@ -37,4 +37,12 @@
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>UserActionsServlet</servlet-name>
+        <servlet-class>app.authentication.controller.UserActionsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserActionsServlet</servlet-name>
+        <url-pattern>/actions</url-pattern>
+    </servlet-mapping>
 </web-app>

@@ -2,12 +2,19 @@ package app.authentication.dao;
 
 import app.authentication.model.OutData;
 import app.authentication.model.ResultCode;
+import app.authentication.model.UserActionModel;
 import app.authentication.model.UserModel;
 import oracle.jdbc.driver.OracleDriver;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 class CallProcedure {
@@ -68,5 +75,45 @@ class CallProcedure {
             conn = null;
             e.printStackTrace();
         }
+    }
+
+    static OutData<List <UserActionModel>, ResultCode> callGetUserActionsProc(int userId) {
+        UserActionModel userActionModel = null;
+        ResultCode resCode = null;
+        CallableStatement statement = null;
+        ResultSet rs = null;
+        List<UserActionModel> userActions = new ArrayList<>();
+
+        try {
+            if (conn == null || conn.isClosed()) {
+                initConnection();
+            }
+
+            statement = conn.prepareCall("{call c##auth_user.USER_PACKAGE.get_user_actions(?, ?)}");
+            statement.setInt(1, userId);
+            statement.registerOutParameter(2, Types.REF_CURSOR);
+            statement.executeQuery();
+
+            rs = (ResultSet) statement.getObject(2);
+
+            while (rs.next()) {
+                userActions.add(
+                    new UserActionModel(rs.getInt("action_id"),
+                    LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getDate("action_date").getTime()), ZoneOffset.UTC).plus(60, ChronoUnit.MINUTES),
+                    rs.getString("action_name"),
+                    rs.getInt("user_id")));
+            }
+
+            resCode = new ResultCode(1, "Successfully fetched user actions.");
+        } catch (SQLException e) {
+            resCode = new ResultCode(0, "An error occurred. Please contact support.");
+            e.printStackTrace();
+        } finally {
+            closeConnections(rs);
+            closeConnections(statement);
+            closeConnections(conn);
+        }
+
+        return new OutData<>(userActions, resCode);
     }
 }
