@@ -45,4 +45,12 @@
         <servlet-name>UserActionsServlet</servlet-name>
         <url-pattern>/actions</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>UserLogoutServlet</servlet-name>
+        <servlet-class>app.authentication.controller.UserLogoutServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserLogoutServlet</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
 </web-app>

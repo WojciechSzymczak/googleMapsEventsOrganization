@@ -1,7 +1,9 @@
 package app.authentication.dao;
 
 import java.io.IOException;
+
 import java.util.List;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
@@ -32,5 +34,14 @@ public class UserDao extends HttpServlet {
         }
 
         return outData.getResObj();
+    }
+
+    public void addUserAction(int userId, String actionName) throws Exception {
+
+        ResultCode res = CallProcedure.addUserAction(userId, actionName);
+
+        if(res.getCode() != 1) {
+            throw new Exception("An error occurred. Please contact support.");
+        }
     }
 }

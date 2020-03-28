@@ -116,4 +116,32 @@ class CallProcedure {
 
         return new OutData<>(userActions, resCode);
     }
+
+    static ResultCode addUserAction(int userId, String actionName) {
+        ResultCode resCode = null;
+        CallableStatement statement = null;
+        ResultSet rs = null;
+
+        try {
+            if (conn == null || conn.isClosed()) {
+                initConnection();
+            }
+
+            statement = conn.prepareCall("{call c##auth_user.USER_PACKAGE.add_user_action(?, ?)}");
+            statement.setInt(1, userId);
+            statement.setString(2, actionName);
+            rs = statement.executeQuery();
+
+            resCode = new ResultCode(1, "Successfully added user action.");
+        } catch (SQLException e) {
+            resCode = new ResultCode(0, "An error occurred. Please contact support.");
+            e.printStackTrace();
+        } finally {
+            closeConnections(rs);
+            closeConnections(statement);
+            closeConnections(conn);
+        }
+
+        return resCode;
+    }
 }

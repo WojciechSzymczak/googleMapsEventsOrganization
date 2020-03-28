@@ -87,7 +87,7 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
             INTO authenticate_user.user_role 
             FROM c##auth_user.user_roles ur
             WHERE ur.user_id = user_rec.user_id;
-            c##auth_user.USER_PACKAGE.add_user_action('Authentication', user_rec.user_id);
+            c##auth_user.USER_PACKAGE.add_user_action(user_rec.user_id, 'Authentication.');
         END IF;
         
         EXCEPTION
