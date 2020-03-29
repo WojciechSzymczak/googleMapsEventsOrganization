@@ -11,15 +11,19 @@ import app.authentication.model.*;
 
 public class UserDao extends HttpServlet {
  
-    public UserModel getUserModel(String name, String pass) throws ServletException, IOException , Exception{
+    public UserModel getUserModel(String name, String pass, String address) throws ServletException, IOException , Exception{
 
-        OutData<UserModel, ResultCode> outData = CallProcedure.callUserAuthenticationProc(name, pass);
+        OutData<UserModel, ResultCode> outData = CallProcedure.callUserAuthenticationProc(name, pass, address);
 
         if(outData.getResCode().getCode() == 0) {
             throw new Exception(outData.getResCode().getMessage());
         }
 
         if(outData.getResCode().getCode() == 2) {
+            throw new Exception(outData.getResCode().getMessage());
+        }
+
+        if(outData.getResCode().getCode() == 3) {
             throw new Exception(outData.getResCode().getMessage());
         }
 

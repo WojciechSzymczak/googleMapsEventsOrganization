@@ -22,7 +22,7 @@ class CallProcedure {
 
     private static Connection conn;
 
-    static OutData<UserModel, ResultCode> callUserAuthenticationProc(String userName, String userPassword) {
+    static OutData<UserModel, ResultCode> callUserAuthenticationProc(String userName, String userPassword,String address) {
         UserModel userModel = null;
         ResultCode resCode = null;
         CallableStatement statement = null;
@@ -33,7 +33,7 @@ class CallProcedure {
                 initConnection();
             }
 
-            statement = conn.prepareCall("{call c##auth_user.USER_PACKAGE.authenticate_user(?, ?, ? ,?, ?, ?, ?)}");
+            statement = conn.prepareCall("{call c##auth_user.USER_PACKAGE.authenticate_user(?, ?, ? ,?, ?, ?, ?, ?)}");
             statement.setString(1, userName);
             statement.setString(2, userPassword);
             statement.registerOutParameter(3, Types.INTEGER);
@@ -41,6 +41,7 @@ class CallProcedure {
             statement.registerOutParameter(5, Types.INTEGER);
             statement.registerOutParameter(6, Types.VARCHAR);
             statement.registerOutParameter(7, Types.VARCHAR);
+            statement.setString(8, address);
             statement.execute();
 
             userModel = new UserModel(statement.getInt(5), statement.getString(6), userName, userPassword, statement.getString(7));

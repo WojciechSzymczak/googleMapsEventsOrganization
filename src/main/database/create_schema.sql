@@ -63,7 +63,8 @@ CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
        , res_msg OUT VARCHAR
        , user_id OUT NUMBER
        , user_email OUT VARCHAR 
-       , user_role OUT VARCHAR);
+       , user_role OUT VARCHAR
+       , user_address IN VARCHAR);
     PROCEDURE get_user_actions(
          user_id IN INTEGER
        , actions_cursor OUT SYS_REFCURSOR);
@@ -96,20 +97,25 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
        , res_msg OUT VARCHAR
        , user_id OUT NUMBER
        , user_email OUT VARCHAR 
-       , user_role OUT VARCHAR) IS
+       , user_role OUT VARCHAR
+       , user_address IN VARCHAR) IS
     wrong_credentials EXCEPTION;
     user_auth_blocked EXCEPTION;
+    user_ip_no_perm EXCEPTION;
     user_rec c##auth_user.users%ROWTYPE;
+    perm_count INTEGER;
+    perm_rec_count INTEGER;
     CURSOR user_cur RETURN c##auth_user.users%ROWTYPE IS
     SELECT * FROM c##auth_user.users u 
     WHERE TRIM(u.user_name) = authenticate_user.user_name
     AND TRIM(u.user_pass) = authenticate_user.user_pass;
-    BEGIN    
+    BEGIN  
         OPEN user_cur;    
         LOOP
             FETCH user_cur INTO user_rec;
             EXIT WHEN user_cur%NOTFOUND;
-        END LOOP;
+        END LOOP;            
+        SELECT COUNT(*) INTO perm_count FROM c##auth_user.user_ip_perm uip WHERE uip.user_id = user_rec.user_id;
         
         IF user_cur%ROWCOUNT = 0 THEN
             CLOSE user_cur;
@@ -117,6 +123,12 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
         ELSE
             IF user_rec.user_auth_blocked_until > SYSDATE THEN
                 RAISE user_auth_blocked;
+            END IF;
+            IF perm_count > 0 THEN
+                SELECT COUNT(*) INTO perm_rec_count FROM c##auth_user.user_ip_perm uip WHERE uip.user_id = user_rec.user_id AND TRIM(uip.perm_ip) = TRIM(authenticate_user.user_address) AND ROWNUM <= 1;
+                IF perm_rec_count <= 0 THEN
+                    RAISE user_ip_no_perm;
+                END IF;
             END IF;
             CLOSE user_cur;
             authenticate_user.res_code := 1;
@@ -138,6 +150,9 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
             WHEN user_auth_blocked THEN
                 authenticate_user.res_code := 2;
                 authenticate_user.res_msg := 'Too many failed authentication attempts. User authentication blocked until: ' || user_rec.user_auth_blocked_until || '.';
+            WHEN user_ip_no_perm THEN
+                authenticate_user.res_code := 3;
+                authenticate_user.res_msg := 'User IP adress is not permitted: ' || authenticate_user.user_address || '.';
     END authenticate_user;
     PROCEDURE get_user_actions(
          user_id IN INTEGER

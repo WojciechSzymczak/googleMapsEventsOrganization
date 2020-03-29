@@ -18,7 +18,7 @@ public class AuthenticationServlet extends HttpServlet {
         UserDao userDao = new UserDao();
 
         try {
-            UserModel userModel = userDao.getUserModel(request.getParameter("login"), request.getParameter("password"));
+            UserModel userModel = userDao.getUserModel(request.getParameter("login"), request.getParameter("password"), request.getRemoteAddr());
             HttpSession session = request.getSession(true);
             session.setAttribute("user", userModel);
             if (userModel.getUserRole().equals("user")) {
