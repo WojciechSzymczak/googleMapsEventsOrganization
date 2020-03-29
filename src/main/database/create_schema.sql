@@ -2,7 +2,8 @@ CREATE TABLE c##auth_user.users(
 	user_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	user_email VARCHAR(255) NOT NULL UNIQUE,
 	user_name VARCHAR(255) NOT NULL UNIQUE,
-	user_pass CHAR(64) NOT NULL
+	user_pass CHAR(64) NOT NULL,
+    user_auth_blocked_until TIMESTAMP
 );
 /
 
@@ -74,6 +75,7 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
        , user_email OUT VARCHAR 
        , user_role OUT VARCHAR) IS
     wrong_credentials EXCEPTION;
+    user_auth_blocked EXCEPTION;
     user_rec c##auth_user.users%ROWTYPE;
     CURSOR user_cur RETURN c##auth_user.users%ROWTYPE IS
     SELECT * FROM c##auth_user.users u 
@@ -89,7 +91,10 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
         IF user_cur%ROWCOUNT = 0 THEN
             CLOSE user_cur;
             RAISE wrong_credentials;
-        ELSE            
+        ELSE
+            IF user_rec.user_auth_blocked_until > SYSDATE THEN
+                RAISE user_auth_blocked;
+            END IF;
             CLOSE user_cur;
             authenticate_user.res_code := 1;
             authenticate_user.res_msg := 'User successfully authenticated.';
@@ -101,12 +106,15 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
             WHERE ur.user_id = user_rec.user_id;
             c##auth_user.USER_PACKAGE.add_user_action(user_rec.user_id, 'Authentication.');
         END IF;
-        
+
         EXCEPTION
             WHEN wrong_credentials THEN
                 authenticate_user.res_code := 0;
-                authenticate_user.res_msg := 'Wrong credentials.';
+                authenticate_user.res_msg := 'Wrong credentials. Please try again.';
                 c##auth_user.USER_PACKAGE.add_auth_attempt(authenticate_user.user_name);
+            WHEN user_auth_blocked THEN
+                authenticate_user.res_code := 2;
+                authenticate_user.res_msg := 'Too many failed authentication attempts. User authentication blocked until: ' || user_rec.user_auth_blocked_until || '.';
     END authenticate_user;
     PROCEDURE get_user_actions(
          user_id IN INTEGER
@@ -127,11 +135,16 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
     PROCEDURE add_auth_attempt(
          user_name IN VARCHAR) IS
          user_rec c##auth_user.users%ROWTYPE;
+         attempt_count INTEGER;
     BEGIN
         SELECT * INTO user_rec FROM c##auth_user.users u WHERE u.user_name = add_auth_attempt.user_name;
         IF user_rec.user_id IS NOT NULL THEN
             INSERT INTO c##auth_user.user_auth_attempt(attempt_date, user_id) VALUES(SYSTIMESTAMP, user_rec.user_id);
         END IF;
+        SELECT COUNT(*) INTO add_auth_attempt.attempt_count FROM c##auth_user.user_auth_attempt uaa WHERE uaa.user_id = user_rec.user_id AND uaa.attempt_date > (SYSDATE - (1/1440*5));
+        IF attempt_count >= 3 THEN
+            UPDATE c##auth_user.users u SET u.user_auth_blocked_until = (SYSDATE + (1/1440*5)) WHERE u.user_id = user_rec.user_id;
+        END IF;    
         EXCEPTION
             WHEN NO_DATA_FOUND THEN
                 dbms_output.put_line('User: ' || add_auth_attempt.user_name || ' not found.');

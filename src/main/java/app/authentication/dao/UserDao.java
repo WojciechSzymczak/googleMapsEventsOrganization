@@ -18,6 +18,14 @@ public class UserDao extends HttpServlet {
 
         OutData<UserModel, ResultCode> outData = CallProcedure.callUserAuthenticationProc(name, pass);
 
+        if(outData.getResCode().getCode() == 0) {
+            throw new Exception(outData.getResCode().getMessage());
+        }
+
+        if(outData.getResCode().getCode() == 2) {
+            throw new Exception(outData.getResCode().getMessage());
+        }
+
         if(outData.getResCode().getCode() != 1) {
             throw new Exception("An error occurred. Please contact support.");
         }

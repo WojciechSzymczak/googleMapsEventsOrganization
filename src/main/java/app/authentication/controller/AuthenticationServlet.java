@@ -27,7 +27,7 @@ public class AuthenticationServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
             }
         } catch (Exception e) {
-            request.getSession().setAttribute("msg", "An authentication error occurred. Please try again.");
+            request.getSession().setAttribute("msg", e.getMessage());
             response.sendRedirect(request.getContextPath() + "/index.jsp");
         }
     }
