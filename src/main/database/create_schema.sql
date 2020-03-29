@@ -26,6 +26,16 @@ CREATE TABLE c##auth_user.users_actions(
     REFERENCES c##auth_user.users(user_id)
 );
 
+CREATE TABLE c##auth_user.user_auth_attempt (
+    attempt_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    attempt_date TIMESTAMP NOT NULL,
+    user_id INTEGER,
+    CONSTRAINT fk_user_attempt
+    FOREIGN KEY (user_id)
+    REFERENCES c##auth_user.users(user_id)
+);
+/
+
 CREATE OR REPLACE TRIGGER c##auth_user.set_user_role_when_registering
 AFTER INSERT ON c##auth_user.users
 FOR EACH ROW
@@ -49,6 +59,8 @@ CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
     PROCEDURE add_user_action(
          user_id IN INTEGER
        , action_name IN VARCHAR);
+    PROCEDURE add_auth_attempt(
+         user_name IN VARCHAR);
 END USER_PACKAGE;
 /
 
@@ -94,6 +106,7 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
             WHEN wrong_credentials THEN
                 authenticate_user.res_code := 0;
                 authenticate_user.res_msg := 'Wrong credentials.';
+                c##auth_user.USER_PACKAGE.add_auth_attempt(authenticate_user.user_name);
     END authenticate_user;
     PROCEDURE get_user_actions(
          user_id IN INTEGER
@@ -108,7 +121,19 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
     PROCEDURE add_user_action(
          user_id IN INTEGER
        , action_name IN VARCHAR) IS
-     BEGIN
+    BEGIN
         INSERT INTO c##auth_user.users_actions(action_date, action_name, user_id) VALUES (SYSDATE, add_user_action.action_name, add_user_action.user_id);
-     END add_user_action;
+    END add_user_action;     
+    PROCEDURE add_auth_attempt(
+         user_name IN VARCHAR) IS
+         user_rec c##auth_user.users%ROWTYPE;
+    BEGIN
+        SELECT * INTO user_rec FROM c##auth_user.users u WHERE u.user_name = add_auth_attempt.user_name;
+        IF user_rec.user_id IS NOT NULL THEN
+            INSERT INTO c##auth_user.user_auth_attempt(attempt_date, user_id) VALUES(SYSTIMESTAMP, user_rec.user_id);
+        END IF;
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                dbms_output.put_line('User: ' || add_auth_attempt.user_name || ' not found.');
+    END add_auth_attempt;
 END USER_PACKAGE;
