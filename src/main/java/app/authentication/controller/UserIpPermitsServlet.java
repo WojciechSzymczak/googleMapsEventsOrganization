@@ -43,8 +43,8 @@ public class UserIpPermitsServlet extends HttpServlet {
         try {
             if ("add_ip_permit".equals(taskName) && request.getParameter("ip_address") != null && !request.getParameter("ip_address").trim().equals("")) {
                 userDao.addUserIpPermit(userModel.getUserId(), request.getParameter("ip_address"));
-            } else if ("delete_ip_permit".equals(taskName)) {
-                userDao.deleteUserIpPermit(userModel.getUserId(), request.getParameter("permit_id"));
+            } else if ("delete_ip_permit".equals(taskName) && request.getParameter("permit_id") != null && !request.getParameter("permit_id").trim().equals("")) {
+                userDao.deleteUserIpPermit(userModel.getUserId(), Integer.parseInt(request.getParameter("permit_id")));
             }
             ipPermitModelList = userDao.getUserIpPermits(userModel.getUserId());
         } catch (Exception e) {

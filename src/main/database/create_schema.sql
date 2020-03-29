@@ -80,6 +80,11 @@ CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
        , permit_ip IN VARCHAR       
        , res_code OUT INTEGER
        , res_msg OUT VARCHAR);
+    PROCEDURE delete_user_ip_permit(
+         user_id IN INTEGER
+       , permit_id IN INTEGER
+       , res_code OUT INTEGER
+       , res_msg OUT VARCHAR);
 END USER_PACKAGE;
 /
 
@@ -197,4 +202,24 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
                 add_user_ip_permit.res_code := 0;
                 add_user_ip_permit.res_msg := 'Permit not added. Please contact support.';
      END add_user_ip_permit;
+     PROCEDURE delete_user_ip_permit(
+         user_id IN INTEGER
+       , permit_id IN INTEGER       
+       , res_code OUT INTEGER
+       , res_msg OUT VARCHAR) IS       
+       permit_not_found EXCEPTION;
+       permit_count INTEGER;
+     BEGIN
+        SELECT COUNT(*) INTO permit_count FROM c##auth_user.user_ip_perm uip WHERE uip.perm_id = delete_user_ip_permit.permit_id;
+        IF permit_count = 0 THEN
+            RAISE permit_not_found;
+        END IF;
+        DELETE FROM c##auth_user.user_ip_perm uip WHERE uip.perm_id = delete_user_ip_permit.permit_id;        
+        delete_user_ip_permit.res_code := 1;
+        delete_user_ip_permit.res_msg := 'Permit deleted.';
+        EXCEPTION
+            WHEN permit_not_found THEN
+                delete_user_ip_permit.res_code := 0;
+                delete_user_ip_permit.res_msg := 'Permit not deleted. Please contact support.';
+     END delete_user_ip_permit;
 END USER_PACKAGE;

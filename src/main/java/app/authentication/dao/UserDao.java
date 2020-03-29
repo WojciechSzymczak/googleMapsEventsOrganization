@@ -70,7 +70,11 @@ public class UserDao extends HttpServlet {
         }
     }
 
-    public void deleteUserIpPermit(int userId, String permit_id) {
-        //TODO
+    public void deleteUserIpPermit(int userId, int permitId) throws Exception{
+        ResultCode resultCode = CallProcedure.callDeleteUserIpPermitProc(userId, permitId);
+
+        if(resultCode.getCode() != 1) {
+            throw new Exception("An error occurred. Please contact support.");
+        }
     }
 }
