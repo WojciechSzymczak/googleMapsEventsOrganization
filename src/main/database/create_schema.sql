@@ -37,6 +37,16 @@ CREATE TABLE c##auth_user.user_auth_attempt (
 );
 /
 
+CREATE TABLE c##auth_user.user_ip_perm (
+    perm_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    perm_ip VARCHAR(32),
+    user_id INTEGER,
+    CONSTRAINT fk_user_ip_perm
+    FOREIGN KEY (user_id)
+    REFERENCES c##auth_user.users(user_id)
+);
+/
+
 CREATE OR REPLACE TRIGGER c##auth_user.set_user_role_when_registering
 AFTER INSERT ON c##auth_user.users
 FOR EACH ROW
@@ -62,6 +72,9 @@ CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
        , action_name IN VARCHAR);
     PROCEDURE add_auth_attempt(
          user_name IN VARCHAR);
+    PROCEDURE get_user_ip_permits(
+         user_id IN INTEGER
+       , permits_cursor OUT SYS_REFCURSOR);
 END USER_PACKAGE;
 /
 
@@ -149,4 +162,14 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
             WHEN NO_DATA_FOUND THEN
                 dbms_output.put_line('User: ' || add_auth_attempt.user_name || ' not found.');
     END add_auth_attempt;
+    PROCEDURE get_user_ip_permits(
+         user_id IN INTEGER
+       , permits_cursor OUT SYS_REFCURSOR) IS       
+    BEGIN
+        OPEN permits_cursor FOR
+        SELECT uip.PERM_ID, uip.PERM_IP, uip.USER_ID 
+        FROM c##auth_user.user_ip_perm uip
+        WHERE uip.user_id = get_user_ip_permits.user_id
+        ORDER BY uip.perm_id;
+    END get_user_ip_permits;
 END USER_PACKAGE;

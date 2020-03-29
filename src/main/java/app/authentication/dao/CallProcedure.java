@@ -1,18 +1,19 @@
 package app.authentication.dao;
 
-import app.authentication.model.OutData;
-import app.authentication.model.ResultCode;
-import app.authentication.model.UserActionModel;
-import app.authentication.model.UserModel;
+import app.authentication.model.*;
+
 import oracle.jdbc.driver.OracleDriver;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+
 import java.sql.*;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -143,5 +144,39 @@ class CallProcedure {
         }
 
         return resCode;
+    }
+
+    public static OutData<List<IpPermitModel>, ResultCode> callGetUserIpPermitsProc(int userId) {
+        List<IpPermitModel> ipPermitModelList = new ArrayList<>();
+        ResultCode resCode = null;
+        CallableStatement statement = null;
+        ResultSet rs = null;
+
+        try {
+            if (conn == null || conn.isClosed()) {
+                initConnection();
+            }
+
+            statement = conn.prepareCall("{call c##auth_user.USER_PACKAGE.get_user_ip_permits(?, ?)}");
+            statement.setInt(1, userId);
+            statement.registerOutParameter(2, Types.REF_CURSOR);
+            statement.executeQuery();
+
+            rs = (ResultSet) statement.getObject(2);
+
+            while (rs.next()) {
+                ipPermitModelList.add( new IpPermitModel(rs.getInt("perm_id"), rs.getString("perm_ip")));
+            }
+
+            resCode = new ResultCode(1, "Successfully fetched user's IP permissions.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeConnections(rs);
+            closeConnections(statement);
+            closeConnections(conn);
+        }
+
+        return new OutData<>(ipPermitModelList, resCode);
     }
 }

@@ -7,10 +7,7 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
-import app.authentication.model.OutData;
-import app.authentication.model.ResultCode;
-import app.authentication.model.UserActionModel;
-import app.authentication.model.UserModel;
+import app.authentication.model.*;
 
 public class UserDao extends HttpServlet {
  
@@ -51,5 +48,24 @@ public class UserDao extends HttpServlet {
         if(res.getCode() != 1) {
             throw new Exception("An error occurred. Please contact support.");
         }
+    }
+
+    public List<IpPermitModel> getUserIpPermits(int userId) throws Exception{
+
+        OutData<List<IpPermitModel>, ResultCode> outData = CallProcedure.callGetUserIpPermitsProc(userId);
+
+        if(outData.getResCode().getCode() != 1) {
+            throw new Exception("An error occurred. Please contact support.");
+        }
+
+        return outData.getResObj();
+    }
+
+    public void addUserIpPermit(int userId, String ip_permit) {
+        //TODO
+    }
+
+    public void deleteUserIpPermit(int userId, String permit_id) {
+        //TODO
     }
 }

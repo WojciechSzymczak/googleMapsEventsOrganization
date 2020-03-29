@@ -53,4 +53,12 @@
         <servlet-name>UserLogoutServlet</servlet-name>
         <url-pattern>/logout</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>UserIpPermitsServlet</servlet-name>
+        <servlet-class>app.authentication.controller.UserIpPermitsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserIpPermitsServlet</servlet-name>
+        <url-pattern>/permits</url-pattern>
+    </servlet-mapping>
 </web-app>
