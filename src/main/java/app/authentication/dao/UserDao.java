@@ -61,8 +61,13 @@ public class UserDao extends HttpServlet {
         return outData.getResObj();
     }
 
-    public void addUserIpPermit(int userId, String ip_permit) {
-        //TODO
+    public void addUserIpPermit(int userId, String ipPermit) throws Exception{
+
+        ResultCode resultCode = CallProcedure.callAddUserIpPermitProc(userId, ipPermit);
+
+        if(resultCode.getCode() != 1) {
+            throw new Exception("An error occurred. Please contact support.");
+        }
     }
 
     public void deleteUserIpPermit(int userId, String permit_id) {

@@ -40,13 +40,12 @@ public class UserIpPermitsServlet extends HttpServlet {
         String taskName = request.getParameter("task_name");
         List<IpPermitModel> ipPermitModelList = new ArrayList<>();
 
-        if ("add_ip_permit".equals(taskName)) {
-            userDao.addUserIpPermit(userModel.getUserId(), request.getParameter("ip_permit"));
-        } else if ("delete_ip_permit".equals(taskName)) {
-            userDao.deleteUserIpPermit(userModel.getUserId(), request.getParameter("permit_id"));
-        }
-
         try {
+            if ("add_ip_permit".equals(taskName) && request.getParameter("ip_address") != null && !request.getParameter("ip_address").trim().equals("")) {
+                userDao.addUserIpPermit(userModel.getUserId(), request.getParameter("ip_address"));
+            } else if ("delete_ip_permit".equals(taskName)) {
+                userDao.deleteUserIpPermit(userModel.getUserId(), request.getParameter("permit_id"));
+            }
             ipPermitModelList = userDao.getUserIpPermits(userModel.getUserId());
         } catch (Exception e) {
             request.getSession().setAttribute("msg", e.getMessage());

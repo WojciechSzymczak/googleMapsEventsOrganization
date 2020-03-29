@@ -75,6 +75,11 @@ CREATE OR REPLACE PACKAGE C##AUTH_USER.USER_PACKAGE AS
     PROCEDURE get_user_ip_permits(
          user_id IN INTEGER
        , permits_cursor OUT SYS_REFCURSOR);
+    PROCEDURE add_user_ip_permit(
+         user_id IN INTEGER
+       , permit_ip IN VARCHAR       
+       , res_code OUT INTEGER
+       , res_msg OUT VARCHAR);
 END USER_PACKAGE;
 /
 
@@ -171,5 +176,25 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
         FROM c##auth_user.user_ip_perm uip
         WHERE uip.user_id = get_user_ip_permits.user_id
         ORDER BY uip.perm_id;
-    END get_user_ip_permits;
+    END get_user_ip_permits;    
+    PROCEDURE add_user_ip_permit(
+         user_id IN INTEGER
+       , permit_ip IN VARCHAR       
+       , res_code OUT INTEGER
+       , res_msg OUT VARCHAR) IS
+       user_not_found EXCEPTION;
+       user_count INTEGER;
+     BEGIN
+        SELECT COUNT(*) INTO user_count FROM c##auth_user.users u WHERE u.user_id = add_user_ip_permit.user_id;
+        IF user_count = 0 THEN
+            RAISE user_not_found;
+        END IF;
+        INSERT INTO c##auth_user.user_ip_perm (perm_ip, user_id) VALUES(add_user_ip_permit.permit_ip, add_user_ip_permit.user_id);        
+        add_user_ip_permit.res_code := 1;
+        add_user_ip_permit.res_msg := 'Permit added.';
+        EXCEPTION
+            WHEN user_not_found THEN
+                add_user_ip_permit.res_code := 0;
+                add_user_ip_permit.res_msg := 'Permit not added. Please contact support.';
+     END add_user_ip_permit;
 END USER_PACKAGE;

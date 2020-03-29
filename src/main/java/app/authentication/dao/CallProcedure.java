@@ -179,4 +179,34 @@ class CallProcedure {
 
         return new OutData<>(ipPermitModelList, resCode);
     }
+
+    public static ResultCode callAddUserIpPermitProc(int userId, String ipPermit) {
+        ResultCode resCode = null;
+        CallableStatement statement = null;
+        ResultSet rs = null;
+
+        try {
+            if (conn == null || conn.isClosed()) {
+                initConnection();
+            }
+
+            statement = conn.prepareCall("{call c##auth_user.USER_PACKAGE.add_user_ip_permit(?, ?, ?, ?)}");
+            statement.setInt(1, userId);
+            statement.setString(2, ipPermit);
+            statement.registerOutParameter(3, Types.NUMERIC);
+            statement.registerOutParameter(4, Types.VARCHAR);
+            statement.executeQuery();
+
+            resCode = new ResultCode(statement.getInt(3), statement.getString(4));
+        } catch (SQLException e) {
+            resCode = new ResultCode(0, "An error occurred. Please contact support.");
+            e.printStackTrace();
+        } finally {
+            closeConnections(rs);
+            closeConnections(statement);
+            closeConnections(conn);
+        }
+
+        return resCode;
+    }
 }
