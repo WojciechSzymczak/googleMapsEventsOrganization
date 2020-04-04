@@ -299,8 +299,7 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.PASSWORD_PACKAGE AS
        SELECT * FROM
        (SELECT * FROM c##auth_user.user_passwords up
        WHERE up.user_id = change_user_password.user_id
-       ORDER BY up.pass_create_date DESC)
-       WHERE ROWNUM <=3;
+       ORDER BY up.pass_create_date DESC);
        pass_occured_in_three_last_passwords EXCEPTION;
     BEGIN
         OPEN user_pass_cursor;
@@ -322,7 +321,7 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.PASSWORD_PACKAGE AS
         EXCEPTION
             WHEN pass_occured_in_three_last_passwords THEN
                 change_user_password.res_code := 0;
-                change_user_password.res_msg := 'The password is same as the one in the last 3 passwords.';
+                change_user_password.res_msg := 'The password is same as the one of the previous passwords.';
         CLOSE user_pass_cursor;        
     END change_user_password;
 END PASSWORD_PACKAGE;
