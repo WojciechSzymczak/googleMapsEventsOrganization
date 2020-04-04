@@ -24,3 +24,11 @@ html {
     top: 30%;
     left: 0%;
 }
+
+.fa-danger {
+    color: red;
+}
+
+.fa-success {
+    color: #00A41E;
+}

@@ -20,6 +20,10 @@ public class UserActionsServlet extends HttpServlet {
         UserDao userDao = new UserDao();
         UserModel user = ((UserModel) request.getSession().getAttribute("user"));
 
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+        }
+
         try {
             List<UserActionModel> userActions = userDao.getUserActions(user.getUserId());
             HttpSession session = request.getSession();

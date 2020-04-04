@@ -11,7 +11,7 @@ import app.authentication.model.*;
 
 public class UserDao extends HttpServlet {
  
-    public UserModel getUserModel(String name, String pass, String address) throws ServletException, IOException , Exception{
+    public OutData<UserModel, ResultCode> getUserModel(String name, String pass, String address) throws ServletException, IOException , Exception{
 
         OutData<UserModel, ResultCode> outData = CallProcedure.callUserAuthenticationProc(name, pass, address);
 
@@ -27,11 +27,15 @@ public class UserDao extends HttpServlet {
             throw new Exception(outData.getResCode().getMessage());
         }
 
-        if(outData.getResCode().getCode() != 1) {
+        if(outData.getResCode().getCode() == 4) {
+            throw new Exception(outData.getResCode().getMessage());
+        }
+
+        if(!(outData.getResCode().getCode() == 1 || outData.getResCode().getCode() ==5)){
             throw new Exception("An error occurred. Please contact support.");
         }
 
-        return outData.getResObj();
+        return outData;
     }
 
     public List<UserActionModel> getUserActions(int userId) throws ServletException, IOException , Exception{
@@ -76,6 +80,18 @@ public class UserDao extends HttpServlet {
 
     public void deleteUserIpPermit(int userId, int permitId) throws Exception{
         ResultCode resultCode = CallProcedure.callDeleteUserIpPermitProc(userId, permitId);
+
+        if(resultCode.getCode() != 1) {
+            throw new Exception("An error occurred. Please contact support.");
+        }
+    }
+
+    public void changePassword(int userId, String password) throws Exception{
+        ResultCode resultCode = CallProcedure.callChangeUserPasswordProc(userId, password);
+
+        if(resultCode.getCode() == 0) {
+            throw new Exception(resultCode.getMessage());
+        }
 
         if(resultCode.getCode() != 1) {
             throw new Exception("An error occurred. Please contact support.");

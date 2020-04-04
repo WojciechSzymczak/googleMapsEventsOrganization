@@ -61,4 +61,12 @@
         <servlet-name>UserIpPermitsServlet</servlet-name>
         <url-pattern>/permits</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>PasswordChangeServlet</servlet-name>
+        <servlet-class>app.authentication.controller.PasswordChangeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PasswordChangeServlet</servlet-name>
+        <url-pattern>/changePass</url-pattern>
+    </servlet-mapping>
 </web-app>

@@ -2,7 +2,6 @@ CREATE TABLE c##auth_user.users(
 	user_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 	user_email VARCHAR(255) NOT NULL UNIQUE,
 	user_name VARCHAR(255) NOT NULL UNIQUE,
-	user_pass CHAR(64) NOT NULL,
     user_auth_blocked_until TIMESTAMP
 );
 /
@@ -42,6 +41,19 @@ CREATE TABLE c##auth_user.user_ip_perm (
     perm_ip VARCHAR(32),
     user_id INTEGER,
     CONSTRAINT fk_user_ip_perm
+    FOREIGN KEY (user_id)
+    REFERENCES c##auth_user.users(user_id)
+);
+/
+
+CREATE TABLE c##auth_user.user_passwords(
+	pass_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    pass_pass CHAR(64),
+	pass_create_date DATE NOT NULL,    
+	pass_immutable_date DATE NOT NULL,
+	pass_expire_date DATE NOT NULL,
+	user_id INTEGER NOT NULL,
+    CONSTRAINT fk_pass_user_id
     FOREIGN KEY (user_id)
     REFERENCES c##auth_user.users(user_id)
 );
@@ -101,45 +113,69 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
        , user_address IN VARCHAR) IS
     wrong_credentials EXCEPTION;
     user_auth_blocked EXCEPTION;
+    pass_expired EXCEPTION;
     user_ip_no_perm EXCEPTION;
     user_rec c##auth_user.users%ROWTYPE;
+    user_pass_rec c##auth_user.user_passwords%ROWTYPE;
     perm_count INTEGER;
     perm_rec_count INTEGER;
     CURSOR user_cur RETURN c##auth_user.users%ROWTYPE IS
     SELECT * FROM c##auth_user.users u 
-    WHERE TRIM(u.user_name) = authenticate_user.user_name
-    AND TRIM(u.user_pass) = authenticate_user.user_pass;
-    BEGIN  
+    WHERE TRIM(u.user_name) = authenticate_user.user_name;
+    BEGIN
         OPEN user_cur;    
         LOOP
             FETCH user_cur INTO user_rec;
             EXIT WHEN user_cur%NOTFOUND;
-        END LOOP;            
+        END LOOP;
+        
         SELECT COUNT(*) INTO perm_count FROM c##auth_user.user_ip_perm uip WHERE uip.user_id = user_rec.user_id;
         
         IF user_cur%ROWCOUNT = 0 THEN
             CLOSE user_cur;
             RAISE wrong_credentials;
         ELSE
+            SELECT * INTO user_pass_rec
+            FROM c##auth_user.user_passwords up
+            WHERE up.pass_create_date = (SELECT MAX(up.pass_create_date)
+            FROM c##auth_user.user_passwords up
+            WHERE up.user_id = user_rec.user_id) 
+            AND up.user_id = user_rec.user_id;
+            
+            IF TRIM(user_pass_rec.pass_pass) != TRIM(authenticate_user.user_pass) THEN
+                CLOSE user_cur;
+                RAISE wrong_credentials;            
+            END IF;
+        
             IF user_rec.user_auth_blocked_until > SYSDATE THEN
                 RAISE user_auth_blocked;
             END IF;
+            
             IF perm_count > 0 THEN
                 SELECT COUNT(*) INTO perm_rec_count FROM c##auth_user.user_ip_perm uip WHERE uip.user_id = user_rec.user_id AND TRIM(uip.perm_ip) = TRIM(authenticate_user.user_address) AND ROWNUM <= 1;
                 IF perm_rec_count <= 0 THEN
                     RAISE user_ip_no_perm;
                 END IF;
             END IF;
+            
             CLOSE user_cur;
+            
             authenticate_user.res_code := 1;
             authenticate_user.res_msg := 'User successfully authenticated.';
             authenticate_user.user_id := user_rec.user_id;
             authenticate_user.user_email := user_rec.user_email;
+            
             SELECT role_name 
             INTO authenticate_user.user_role 
             FROM c##auth_user.user_roles ur
             WHERE ur.user_id = user_rec.user_id;
+            
             c##auth_user.USER_PACKAGE.add_user_action(user_rec.user_id, 'Authentication.');
+            
+            IF user_pass_rec.pass_expire_date < SYSDATE THEN            
+                authenticate_user.res_code := 5;
+                authenticate_user.res_msg := 'User password expired please set a new one.';
+            END IF;
         END IF;
 
         EXCEPTION
@@ -153,6 +189,9 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
             WHEN user_ip_no_perm THEN
                 authenticate_user.res_code := 3;
                 authenticate_user.res_msg := 'User IP adress is not permitted: ' || authenticate_user.user_address || '.';
+            WHEN no_data_found THEN
+                authenticate_user.res_code := 4;
+                authenticate_user.res_msg := 'User password not found. User name: ' || authenticate_user.user_name || '.';
     END authenticate_user;
     PROCEDURE get_user_actions(
          user_id IN INTEGER
@@ -238,3 +277,52 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.USER_PACKAGE AS
                 delete_user_ip_permit.res_msg := 'Permit not deleted. Please contact support.';
      END delete_user_ip_permit;
 END USER_PACKAGE;
+/
+
+CREATE OR REPLACE PACKAGE C##AUTH_USER.PASSWORD_PACKAGE AS
+    PROCEDURE change_user_password(    
+         user_id IN VARCHAR
+       , pass_pass IN VARCHAR
+       , res_code OUT NUMBER
+       , res_msg OUT VARCHAR);
+END PASSWORD_PACKAGE;
+/
+
+CREATE OR REPLACE PACKAGE BODY c##auth_user.PASSWORD_PACKAGE AS
+    PROCEDURE change_user_password(
+         user_id IN VARCHAR
+       , pass_pass IN VARCHAR
+       , res_code OUT NUMBER
+       , res_msg OUT VARCHAR) IS
+       user_pass_rec c##auth_user.user_passwords%ROWTYPE;
+       CURSOR user_pass_cursor IS
+       SELECT * FROM
+       (SELECT * FROM c##auth_user.user_passwords up
+       WHERE up.user_id = change_user_password.user_id
+       ORDER BY up.pass_create_date DESC)
+       WHERE ROWNUM <=3;
+       pass_occured_in_three_last_passwords EXCEPTION;
+    BEGIN
+        OPEN user_pass_cursor;
+        
+        LOOP
+            FETCH user_pass_cursor INTO user_pass_rec;
+            EXIT WHEN user_pass_cursor%NOTFOUND;            
+            IF TRIM(change_user_password.pass_pass) = TRIM(user_pass_rec.pass_pass) THEN
+                RAISE pass_occured_in_three_last_passwords;
+            END IF;
+        END LOOP;
+        
+        INSERT INTO c##auth_user.user_passwords (pass_pass, pass_create_date, pass_immutable_date, pass_expire_date, user_id) 
+        VALUES (change_user_password.pass_pass, SYSDATE, SYSDATE + 1, SYSDATE + 90, change_user_password.user_id);
+        
+        change_user_password.res_code := 1;
+        change_user_password.res_msg := 'The password was successfuly changed.';
+        
+        EXCEPTION
+            WHEN pass_occured_in_three_last_passwords THEN
+                change_user_password.res_code := 0;
+                change_user_password.res_msg := 'The password is same as the one in the last 3 passwords.';
+        CLOSE user_pass_cursor;        
+    END change_user_password;
+END PASSWORD_PACKAGE;

@@ -1,6 +1,8 @@
 package app.authentication.controller;
 
 import app.authentication.dao.UserDao;
+import app.authentication.model.OutData;
+import app.authentication.model.ResultCode;
 import app.authentication.model.UserModel;
 
 import java.io.IOException;
@@ -18,12 +20,17 @@ public class AuthenticationServlet extends HttpServlet {
         UserDao userDao = new UserDao();
 
         try {
-            UserModel userModel = userDao.getUserModel(request.getParameter("login"), request.getParameter("password"), request.getRemoteAddr());
+            OutData<UserModel, ResultCode> outData = userDao.getUserModel(request.getParameter("login"), request.getParameter("password"), request.getRemoteAddr());
             HttpSession session = request.getSession(true);
-            session.setAttribute("user", userModel);
-            if (userModel.getUserRole().equals("user")) {
-                response.sendRedirect(request.getContextPath() + "/actions");
-            } else if (userModel.getUserRole().equals("admin")) {
+            session.setAttribute("user", outData.getResObj());
+            if (outData.getResObj().getUserRole().equals("user")) {
+                if (outData.getResCode().getCode() == 5) {
+                    session.setAttribute("msg", outData.getResCode().getMessage());
+                    response.sendRedirect(request.getContextPath() + "/user/changePassword.jsp");
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/actions");
+                }
+            } else if (outData.getResObj().getUserRole().equals("admin")) {
                 response.sendRedirect(request.getContextPath() + "/admin/index.jsp");
             }
         } catch (Exception e) {

@@ -3,6 +3,7 @@
 
     <c:if test="${sessionScope.user != null}">
         <div class="user_panel_buttons">
+            <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/changePass">Change Password</a>
             <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/permits">IP Permits</a>
             <a class="btn btn-outline-primary" href="${pageContext.request.contextPath}/logout">Log out</a>
         </div>
@@ -11,6 +12,6 @@
 
 <script type="text/javascript">
     document.getElementById("title").onclick = function () {
-        location.href = "${pageContext.request.contextPath}/user/index.jsp";
+        location.href = "${pageContext.request.contextPath}/actions";
     };
 </script>
