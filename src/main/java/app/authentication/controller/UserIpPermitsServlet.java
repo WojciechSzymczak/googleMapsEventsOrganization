@@ -43,8 +43,13 @@ public class UserIpPermitsServlet extends HttpServlet {
         try {
             if ("add_ip_permit".equals(taskName) && request.getParameter("ip_address") != null && !request.getParameter("ip_address").trim().equals("")) {
                 userDao.addUserIpPermit(userModel.getUserId(), request.getParameter("ip_address"));
+                userDao.addUserAction(userModel.getUserId(), "Added permit for IP: " + request.getParameter("ip_address") + ".");
             } else if ("delete_ip_permit".equals(taskName) && request.getParameter("permit_id") != null && !request.getParameter("permit_id").trim().equals("")) {
                 userDao.deleteUserIpPermit(userModel.getUserId(), Integer.parseInt(request.getParameter("permit_id")));
+                String ip = ((List<IpPermitModel>) request.getSession().getAttribute("permits"))
+                        .stream().filter(perm -> perm.getPermitId() == Integer.parseInt(request.getParameter("permit_id")))
+                        .findFirst().get().getPermitIp();
+                userDao.addUserAction(userModel.getUserId(), "Deleted permit for IP: " + ip + ".");
             }
             ipPermitModelList = userDao.getUserIpPermits(userModel.getUserId());
         } catch (Exception e) {

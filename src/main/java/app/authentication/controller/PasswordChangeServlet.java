@@ -29,6 +29,7 @@ public class PasswordChangeServlet extends HttpServlet {
         try {
             userDao.changePassword(userModel.getUserId(), (String) request.getParameter("password2"));
             request.getSession().setAttribute("res", "Password successfully changed!");
+            userDao.addUserAction(userModel.getUserId(), "Changed password.");
         } catch (Exception e) {
             request.getSession().setAttribute("msg", e.getMessage());
         }
