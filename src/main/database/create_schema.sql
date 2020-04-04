@@ -49,9 +49,9 @@ CREATE TABLE c##auth_user.user_ip_perm (
 CREATE TABLE c##auth_user.user_passwords(
 	pass_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     pass_pass CHAR(64),
-	pass_create_date DATE NOT NULL,    
-	pass_immutable_date DATE NOT NULL,
-	pass_expire_date DATE NOT NULL,
+	pass_create_date TIMESTAMP NOT NULL,    
+	pass_immutable_date TIMESTAMP NOT NULL,
+	pass_expire_date TIMESTAMP NOT NULL,
 	user_id INTEGER NOT NULL,
     CONSTRAINT fk_pass_user_id
     FOREIGN KEY (user_id)
@@ -301,16 +301,27 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.PASSWORD_PACKAGE AS
        WHERE up.user_id = change_user_password.user_id
        ORDER BY up.pass_create_date DESC);
        pass_occured_in_three_last_passwords EXCEPTION;
+       immutable_password EXCEPTION;
     BEGIN
         OPEN user_pass_cursor;
-        
         LOOP
             FETCH user_pass_cursor INTO user_pass_rec;
             EXIT WHEN user_pass_cursor%NOTFOUND;            
             IF TRIM(change_user_password.pass_pass) = TRIM(user_pass_rec.pass_pass) THEN
                 RAISE pass_occured_in_three_last_passwords;
             END IF;
-        END LOOP;
+        END LOOP;        
+        CLOSE user_pass_cursor;
+        
+        SELECT * INTO user_pass_rec FROM
+        (SELECT * FROM c##auth_user.user_passwords up
+        WHERE up.user_id = change_user_password.user_id
+        ORDER BY up.pass_create_date DESC)
+        WHERE ROWNUM <= 1;
+        
+        IF user_pass_rec.pass_immutable_date > SYSDATE THEN
+            RAISE immutable_password;
+        END IF;
         
         INSERT INTO c##auth_user.user_passwords (pass_pass, pass_create_date, pass_immutable_date, pass_expire_date, user_id) 
         VALUES (change_user_password.pass_pass, SYSDATE, SYSDATE + 1, SYSDATE + 90, change_user_password.user_id);
@@ -322,6 +333,8 @@ CREATE OR REPLACE PACKAGE BODY c##auth_user.PASSWORD_PACKAGE AS
             WHEN pass_occured_in_three_last_passwords THEN
                 change_user_password.res_code := 0;
                 change_user_password.res_msg := 'The password is same as the one of the previous passwords.';
-        CLOSE user_pass_cursor;        
+            WHEN immutable_password THEN                
+                change_user_password.res_code := 2;
+                change_user_password.res_msg := 'The password cannot be changed until: ' || user_pass_rec.pass_immutable_date || '.';                
     END change_user_password;
 END PASSWORD_PACKAGE;

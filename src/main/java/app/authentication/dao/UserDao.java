@@ -93,6 +93,10 @@ public class UserDao extends HttpServlet {
             throw new Exception(resultCode.getMessage());
         }
 
+        if(resultCode.getCode() == 2) {
+            throw new Exception(resultCode.getMessage());
+        }
+
         if(resultCode.getCode() != 1) {
             throw new Exception("An error occurred. Please contact support.");
         }
